@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DICTIONNAIRE IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Dark Theme Variables */
+    --bg: #101012;
+    --panel: #17171a;
+    --panel-raised: #1d1d21;
+    --cue: #efe6d3;
+    --cue-ink: #201c14;
+    --signal: #e2394a;
+    --tele: #39d97a;
+    --tele-dim: #1f7a45;
+    --amber: #c98a3b;
+    --muted: #8b8a92;
+    --ink: #eae7dd;
+    --line: #2a2a2f;
+    --radius: 14px;
+    --shadow-color: rgba(0,0,0,0.5);
+  }
+
+  body.light-theme {
+    /* Light Theme Variables */
+    --bg: #f4f4f8;
+    --panel: #ffffff;
+    --panel-raised: #f9f9fc;
+    --cue: #fcf9f2;
+    --cue-ink: #201c14;
+    --signal: #d93040;
+    --tele: #1f9d55;
+    --tele-dim: #84d6a5;
+    --amber: #b87118;
+    --muted: #6b6a72;
+    --ink: #101012;
+    --line: #d1d1d6;
+    --shadow-color: rgba(0,0,0,0.08);
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; transition: background 0.3s ease, color 0.3s ease; }
+
+  body{
+    background: radial-gradient(1200px 500px at 50% -10%, var(--panel-raised) 0%, var(--bg) 60%);
+    color: var(--ink);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 28px 16px 0;
+    overflow-x: hidden;
+  }
+  
+  /* Font Choices */
+  body.font-serif { font-family: Georgia, 'Times New Roman', serif; }
+  body.font-sans { font-family: Arial, Helvetica, sans-serif; }
+
+  .display{ font-family:'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; margin:0;}
+  .app{ max-width: 800px; margin: 0 auto; padding-bottom: 60px;}
+
+  /* ---------- Header ---------- */
+  .header{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 22px; }
+  .brand{ display:flex; align-items:center; gap: 10px; }
+  
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+  .status-dot.online { background: var(--tele); color: var(--tele); }
+  .status-dot.offline { background: var(--signal); color: var(--signal); }
+
+  .brand-text h1{ font-size: 24px; font-weight:700; color: var(--ink); line-height: 1.1;}
+  .brand-text .caption { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
+  
+  .header-actions { display:flex; align-items:center; gap: 8px; flex-wrap: wrap;}
+  
+  .icon-btn {
+    background: var(--panel); border:1px solid var(--line); color: var(--ink);
+    width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:4px;
+    cursor:pointer; transition: all .15s ease; font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 600;
+  }
+  .icon-btn:hover{ border-color: var(--amber); }
+  .icon-btn:active{ transform: scale(.94); }
+
+  /* ---------- Inline SVG icons ---------- */
+  .icon-svg{ display:block; flex-shrink:0; }
+  #langToggle{ font-size: 10px; letter-spacing: .04em; }
+  .action-btn{ display:inline-flex; align-items:center; gap:7px; }
+  .settings-header h3{ display:flex; align-items:center; gap:8px; }
+  .lang-check{ gap: 6px; }
+  .pill .del-btn, .history-item .del-hist{ display:inline-flex; align-items:center; justify-content:center; }
+
+  /* ---------- Core Sections ---------- */
+  .section{ margin-bottom: 24px; }
+  .slug{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size: 11px; letter-spacing: .12em; color: var(--amber); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ---------- Search & Details ---------- */
+  .search-bar-wrap { position: relative; display:flex; width: 100%; gap: 8px;}
+  .search-input {
+    flex: 1; background: var(--panel-raised); border:1px solid var(--line); color: var(--ink);
+    border-radius:10px; padding:12px 16px; font-family:'Space Mono',monospace; font-size:15px; outline:none;
+    transition: all .2s ease;
+  }
+  .search-input:focus { border-color: var(--tele); box-shadow: 0 0 0 1px var(--tele) inset; }
+  
+  .pills-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .pill {
+    background: transparent; border:1px dashed var(--line); color: var(--muted);
+    padding: 5px 12px; border-radius: 999px; font-family:'Space Mono',monospace; font-size:12px;
+    display:flex; align-items:center; gap: 6px; transition: all .15s ease; cursor: pointer;
+  }
+  .pill:hover { border-style: solid; border-color: var(--amber); color: var(--amber); }
+  .pill .del-btn { background: none; border: none; color: var(--signal); cursor: pointer; padding: 0; font-size: 10px; font-weight: bold;}
+
+  .slider-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; background: var(--panel); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line);}
+  .slider-wrap-top { display: flex; align-items: center; gap: 12px; }
+  .slider-wrap-top label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;}
+  input[type=range] { flex: 1; accent-color: var(--tele); cursor: pointer; }
+
+  /* ---------- Clickable quick-select points ---------- */
+  .slider-points { display: flex; justify-content: space-between; padding: 0 1px; }
+  .slider-point {
+    background: none; border: none; padding: 3px 6px; font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+    cursor: pointer; border-radius: 5px; transition: color .15s ease, background .15s ease;
+  }
+  .slider-point::before {
+    content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--line); margin-right: 5px; vertical-align: middle; transition: background .15s ease, transform .15s ease;
+  }
+  .slider-point:hover { color: var(--ink); background: var(--panel-raised); }
+  .slider-point.active { color: var(--tele); font-weight: 700; }
+  .slider-point.active::before { background: var(--tele); transform: scale(1.25); }
+
+  /* ---------- Output Boxes ---------- */
+  .dict-box {
+    background: var(--cue); color: var(--cue-ink); border-radius: var(--radius);
+    border: 1px solid #d8cbaa; padding: 16px; position:relative;
+    transition: background .3s ease, color .3s ease;
+    min-height: 120px; max-height: 300px; overflow-y: auto;
+    font-size: 14px; line-height: 1.6; scrollbar-width: thin;
+  }
+  .dict-box::-webkit-scrollbar { width: 6px; }
+  .dict-box::-webkit-scrollbar-thumb { background: #d8cbaa; border-radius: 4px; }
+
+  /* ---------- Realtime translation row ---------- */
+  .lang-row{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .lang-check{ display:flex; align-items:center; gap:7px; font-size:12px; color: var(--muted); cursor:pointer; text-transform:uppercase; letter-spacing:.05em; }
+  .lang-check input{ accent-color: var(--amber); }
+  select.lang-select{
+    background: var(--panel); border:1px solid var(--line); color: var(--ink); border-radius:8px;
+    padding:7px 10px; font-family:'Space Mono',monospace; font-size:12px; cursor:pointer;
+    transition: background .3s ease, color .3s ease;
+  }
+  .lang-status{ font-size:11px; color: var(--muted); }
+  .lang-status.err{ color: var(--signal); }
+
+  /* ---------- Collapsible API params ---------- */
+  .api-toggle{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:none; border:none; padding:0; margin-bottom:8px; cursor:pointer; font:inherit; text-align:left;
+    color: var(--amber);
+  }
+  .api-toggle .api-toggle-icon{ transition: transform .2s ease; flex-shrink:0; }
+  .api-toggle.collapsed .api-toggle-icon{ transform: rotate(-90deg); }
+  .api-panel{ overflow:hidden; max-height:260px; opacity:1; transition: max-height .25s ease, opacity .2s ease, margin .25s ease; }
+  .api-panel.collapsed{ max-height:0; opacity:0; margin:0; }
+  .api-grid{ display:flex; gap:8px; flex-wrap:wrap; }
+  .api-grid select, .api-grid input { flex:1; min-width: 130px; }
+  #apiModelRow{ margin-top:8px; }
+  #apiKeyLinks{ word-break: break-all; }
+  .api-hint{ font-size:10.5px; color: var(--muted); margin-top:6px; line-height:1.5; }
+
+  /* ---------- Voice selection ---------- */
+  .voice-filter{ margin-bottom: 8px; }
+
+  /* ---------- Actions ---------- */
+  .action-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
+  .action-btn {
+    background: var(--panel); border:1px solid var(--line); color: var(--ink);
+    padding: 8px 14px; border-radius:8px; font-family:'Oswald',sans-serif; letter-spacing:.05em;
+    text-transform:uppercase; font-size:12px; cursor:pointer; transition: all .15s ease;
+  }
+  .action-btn:hover { border-color: var(--tele); color: var(--tele); }
+
+  /* ---------- Volume Row ---------- */
+  .volume-row { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .vol-btn {
+    background: var(--panel); border:1px solid var(--line); color: var(--ink);
+    width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; cursor:pointer; font-family:'Oswald',sans-serif; font-size:15px; font-weight:700;
+    line-height:1; transition: all .15s ease;
+  }
+  .vol-btn:hover { border-color: var(--tele); color: var(--tele); }
+  .vol-btn:active { transform: scale(.92); }
+  #volumeSlider { flex:1; }
+  
+  /* ---------- Settings Popup (Draggable) ---------- */
+  .settings-modal {
+    position: fixed; top: 12%; left: 50%; transform: translateX(-50%);
+    width: 340px; max-width: 90vw; background: var(--panel-raised); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: 0 10px 40px var(--shadow-color);
+    z-index: 100; display: none; flex-direction: column; overflow: hidden;
+  }
+  .settings-modal.show { display: flex; }
+  .settings-header {
+    background: var(--panel); padding: 12px 16px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center; cursor: grab;
+  }
+  .settings-header:active { cursor: grabbing; }
+  .settings-header h3 { margin: 0; font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--ink); text-transform: uppercase; }
+  .settings-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto; scrollbar-width: thin; }
+  .settings-body label { font-size: 11px; color: var(--amber); text-transform: uppercase; letter-spacing: 0.05em; display:block; margin-bottom: 6px; }
+  .settings-body input, .settings-body select {
+    width: 100%; background: var(--panel); border:1px solid var(--line); color: var(--ink);
+    border-radius:6px; padding:8px 10px; font-family:'Space Mono',monospace; font-size:12px; outline:none;
+  }
+  .settings-section{ border-top: 1px solid var(--line); padding-top: 12px; }
+  .settings-section:first-child{ border-top: none; padding-top: 0; }
+
+  /* ---------- History Panel ---------- */
+  .scrim { position:fixed; inset:0; background: var(--shadow-color); opacity:0; pointer-events:none; transition: opacity .2s ease; z-index: 40; }
+  .scrim.show { opacity:1; pointer-events:auto; }
+  .history-panel {
+    position:fixed; top:0; left:0; bottom:0; width: min(320px, 86vw); background: var(--panel);
+    border-right:1px solid var(--line); transform: translateX(-100%); transition: transform .25s ease, background .3s ease;
+    z-index: 50; display:flex; flex-direction:column;
+  }
+  .history-panel.open { transform: translateX(0); }
+  .history-head { display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid var(--line); }
+  .history-head h2 { margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.06em; font-size:16px; color: var(--ink); }
+  .history-list { flex:1; overflow-y:auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;}
+  
+  .history-item {
+    background: var(--panel-raised); border:1px solid var(--line); border-radius:99px; padding:10px 12px;
+    display: flex; justify-content: space-between; align-items: center; transition: all .15s ease; cursor: pointer;
+  }
+  .history-item:hover { border-color: var(--amber); }
+  .history-item .word { font-size: 13px; font-weight: bold; color: var(--ink); }
+  .history-item .del-hist {
+    background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 4px;
+  }
+  .history-item .del-hist:hover { color: var(--signal); background: rgba(226,57,74,.1); }
+  
+  .history-foot { padding:12px 16px; border-top:1px solid var(--line); }
+  .clear-btn {
+    width:100%; background:none; border:1px solid var(--signal); color: var(--signal); border-radius:8px;
+    padding:10px; font-family:'Space Mono',monospace; font-size:12px; cursor:pointer; text-transform:uppercase; letter-spacing:.05em;
+  }
+  .clear-btn:hover { background: rgba(226,57,74,.1); }
+
+  /* ---------- Footer Marquee ---------- */
+  .footer {
+    position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel);
+    padding: 10px 0; border-top:1px solid var(--line); overflow:hidden; white-space:nowrap; z-index: 30;
+    box-shadow: 0 -6px 16px var(--shadow-color);
+  }
+  .marquee-track {
+    display: inline-flex; width: max-content;
+    animation: scroll-marquee 60s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  .marquee-item {
+    margin-right: 15px;
+    font-family:'Oswald',sans-serif; letter-spacing:.15em; text-transform:uppercase; font-size:11px; color: var(--muted);
+  }
+  .marquee-news-link { color: var(--tele); text-decoration: none; font-weight: bold; }
+  .marquee-news-link:hover { text-decoration: underline; }
+  @keyframes scroll-marquee { 0%{ transform: translateX(0); } 100%{ transform: translateX(-50%); } }
+
+  /* ---------- Mobile Adaptive Layout Specifications ---------- */
+  @media (max-width: 600px) {
+    body { padding: 14px 10px 80px; }
+    .header { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .header-actions { width: 100%; justify-content: flex-start; gap: 6px; }
+    .icon-btn { flex: 1; min-width: 40px; justify-content: center; }
+    .search-bar-wrap { width: 100%; }
+    .search-input { font-size: 14px; padding: 10px 12px; }
+    #searchBtn { width: 44px !important; height: 44px !important; }
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+    .action-row #readAloudBtn { grid-column: span 2; }
+    .action-row input[type=range]#speedSlider { grid-column: span 2; width: 100% !important; margin: 4px 0; }
+    .action-row span { display: none; }
+    .volume-row { width: 100%; }
+    .action-btn { width: 100%; justify-content: center; padding: 10px; }
+    .settings-modal { width: 95vw; max-width: 95vw; top: 6%; }
+    .api-grid { flex-direction: column; gap: 8px; }
+    .api-grid select, .api-grid input { width: 100%; }
+  }
+</style>
+</head>
+<body class="dark-theme" id="appBody">
+
+<!-- Background Scrim for History -->
+<div class="scrim" id="scrim"></div>
+
+<!-- History Left Panel -->
+<aside class="history-panel" id="historyPanel">
+  <div class="history-head">
+    <h2>Historique</h2>
+    <button class="icon-btn" id="closeHistory" style="width: 28px; height: 28px;"><svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+  <div class="history-foot">
+    <button class="clear-btn" id="clearHistory">Effacer tout l'historique</button>
+  </div>
+</aside>
+
+<!-- Draggable Settings Modal -->
+<div class="settings-modal" id="settingsModal">
+  <div class="settings-header" id="settingsHeader">
+    <h3><svg class="icon-svg" width="16" height="16" viewBox="0 0 512 512" xml:space="preserve"> <circle style="fill:#BDFBFD;" cx="256" cy="256" r="256"/> <path style="fill:#00E4ED;" d="M275.092,511.291c126.162-9.302,226.897-110.037,236.199-236.199L379.197,142.998l-3.751,32.99 l-83.18-83.18l-116.14,101.707L96.539,205.81l110.645,110.645l-74.38,52.546L275.092,511.291z"/> <path style="fill:#324A5E;" d="M382.928,256c0-10.128-1.221-19.966-3.462-29.408l35.995-20.782l-36.264-62.812l-36.021,20.795 c-14.252-13.478-31.613-23.69-50.912-29.434V92.808h-72.53v41.551c-19.297,5.744-36.659,15.956-50.91,29.434l-36.019-20.795 L96.539,205.81l35.995,20.782c-2.241,9.442-3.462,19.28-3.462,29.408c0,10.128,1.221,19.966,3.462,29.408L96.539,306.19 l36.266,62.814l36.019-20.795c14.252,13.479,31.613,23.69,50.91,29.434v41.551h72.53v-41.551 c19.297-5.744,36.659-15.956,50.912-29.434l36.021,20.795l36.264-62.814l-35.997-20.782 C381.707,275.966,382.928,266.128,382.928,256z M256,310.398c-30.043,0-54.398-24.355-54.398-54.398s24.355-54.398,54.398-54.398 s54.398,24.355,54.398,54.398S286.043,310.398,256,310.398z"/> <path style="fill:#2B3B4E;" d="M382.928,256c0-10.128-1.221-19.966-3.462-29.408l35.995-20.782l-36.264-62.812l-36.021,20.795 c-14.252-13.478-31.613-23.69-50.91-29.434V92.806h-36.84v108.809c0.191-0.002,0.381-0.014,0.574-0.014 c30.043,0,54.398,24.354,54.398,54.398S286.042,310.398,256,310.398c-0.193,0-0.383-0.012-0.574-0.014v108.809h36.84v-41.551c19.297-5.744,36.659-15.955,50.91-29.434l36.021,20.795l36.264-62.814l-35.995-20.782C381.707,275.966,382.928,266.128,382.928,256 z"/> <path style="fill:#FFD15D;" d="M256,181.682c-41.044,0-74.318,33.273-74.318,74.318c0,41.044,33.273,74.318,74.318,74.318 c41.044,0,74.318-33.273,74.318-74.318S297.044,181.682,256,181.682z M256,320.54c-35.643,0-64.54-28.894-64.54-64.54 s28.896-64.54,64.54-64.54s64.54,28.894,64.54,64.54S291.643,320.54,256,320.54z"/> <path style="fill:#F4A200;" d="M256,181.682c-0.193,0-0.381,0.014-0.574,0.014v9.778c0.191-0.002,0.381-0.014,0.574-0.014 c35.643,0,64.54,28.894,64.54,64.54s-28.894,64.54-64.54,64.54c-0.193,0-0.383-0.012-0.574-0.014v9.778 c0.193,0,0.381,0.014,0.574,0.014c41.044,0,74.318-33.273,74.318-74.318S297.044,181.682,256,181.682z"/> </svg><span>Paramètres</span></h3>
+    <!-- Modified Settings Close Button: Red, Bigger, Enhanced Contrast -->
+    <button class="icon-btn" id="closeSettings" style="width: 36px; height: 36px; background: var(--signal); color: #ffffff; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease;"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-section">
+      <button class="api-toggle" id="apiParamsToggle" type="button" aria-expanded="true" aria-controls="apiPanel">
+        <span>Paramètres API (temps réel)</span>
+        <svg class="api-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="api-panel" id="apiPanel">
+        <div class="api-grid">
+          <select id="apiProvider">
+            <option value="free">Gratuit hors-ligne (sans clé)</option>
+            <option value="openrouter">OpenRouter — modèles :free (clé gratuite)</option>
+            <option value="groq">Groq — free tier (clé gratuite)</option>
+            <option value="google">Google AI Studio — Gemini (clé gratuite)</option>
+            <option value="github">GitHub Models — clé PAT GitHub</option>
+          </select>
+          <input type="password" id="apiKey" placeholder="Clé API (facultative)" autocomplete="off">
+        </div>
+        <div class="api-grid" id="apiModelRow">
+          <select id="apiModel"></select>
+        </div>
+        <div class="api-hint" id="apiHint">Sans clé, le dictionnaire reste en mode local limité. Avec une clé, les définitions et traductions sont générées en temps réel.</div>
+        <div class="api-hint" id="apiKeyLinks"></div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <label>Voix de lecture</label>
+      <input type="text" id="voiceFilter" class="voice-filter" placeholder="Filtrer les voix (ex: français)...">
+      <select id="voiceSelect"><option>Chargement des voix...</option></select>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <span id="networkStatus" class="status-dot online" title="En ligne"></span>
+      <div class="brand-text">
+        <h1 class="display">DICTIONNAIRE IA</h1>
+        <div class="caption">Dictionnaire IA gratuit</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="openHistory" title="Historique"><svg class="icon-svg" width="20" height="20" version="1.1" id="Layer_1" viewBox="0 0 512 512" xml:space="preserve"> <g> <path style="fill:#CEC9AE;" d="M127.687,472.276l26.483,26.483l26.483-26.483l26.483,26.483l26.483-26.483l26.483,26.483 l26.483-26.483l26.483,26.483l26.483-26.483l26.483,26.483l26.483-26.483l13.559,13.559V163.31H105.935v330.717L127.687,472.276z" /> <g> <path style="fill:#EDEBDA;" d="M79.448,163.31h353.103V48.552H79.448V163.31z"/> <path style="fill:#EDEBDA;" d="M282.483,216.276h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C291.31,212.33,287.356,216.276,282.483,216.276"/> <path style="fill:#EDEBDA;" d="M361.931,216.276h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C370.759,212.33,366.804,216.276,361.931,216.276"/> <path style="fill:#EDEBDA;" d="M282.483,251.586h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C291.31,247.64,287.356,251.586,282.483,251.586"/> <path style="fill:#EDEBDA;" d="M361.931,251.586h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C370.759,247.64,366.804,251.586,361.931,251.586"/> <path style="fill:#EDEBDA;" d="M282.483,286.897h-35.31c-4.873,0-8.828-3.946-8.828-8.828s3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828S287.356,286.897,282.483,286.897"/> <path style="fill:#EDEBDA;" d="M361.931,286.897h-35.31c-4.873,0-8.828-3.946-8.828-8.828s3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828S366.804,286.897,361.931,286.897"/> <path style="fill:#EDEBDA;" d="M282.483,322.207h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C291.31,318.261,287.356,322.207,282.483,322.207"/> <path style="fill:#EDEBDA;" d="M361.931,322.207h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C370.759,318.261,366.804,322.207,361.931,322.207"/> <path style="fill:#EDEBDA;" d="M282.483,357.517h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C291.31,353.571,287.356,357.517,282.483,357.517"/> <path style="fill:#EDEBDA;" d="M361.931,357.517h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C370.759,353.571,366.804,357.517,361.931,357.517"/> <path style="fill:#EDEBDA;" d="M282.483,392.828h-35.31c-4.873,0-8.828-3.946-8.828-8.828s3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828S287.356,392.828,282.483,392.828"/> <path style="fill:#EDEBDA;" d="M361.931,392.828h-35.31c-4.873,0-8.828-3.946-8.828-8.828s3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828S366.804,392.828,361.931,392.828"/> <path style="fill:#EDEBDA;" d="M282.483,428.138h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C291.31,424.192,287.356,428.138,282.483,428.138"/> <path style="fill:#EDEBDA;" d="M361.931,428.138h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C370.759,424.192,366.804,428.138,361.931,428.138"/> <path style="fill:#EDEBDA;" d="M194.207,322.207h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C203.034,318.261,199.08,322.207,194.207,322.207"/> <path style="fill:#EDEBDA;" d="M194.207,357.517h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C203.034,353.571,199.08,357.517,194.207,357.517"/> <path style="fill:#EDEBDA;" d="M194.207,392.828h-35.31c-4.873,0-8.828-3.946-8.828-8.828s3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828S199.08,392.828,194.207,392.828"/> <path style="fill:#EDEBDA;" d="M194.207,428.138h-35.31c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h35.31 c4.873,0,8.828,3.946,8.828,8.828C203.034,424.192,199.08,428.138,194.207,428.138"/> </g> <path style="fill:#DD342E;" d="M189.556,278.069H163.55c-7.442,0-13.48-6.038-13.48-13.48V212.1c0-7.442,6.038-13.48,13.48-13.48 h26.006c7.442,0,13.48,6.038,13.48,13.48v52.489C203.035,272.031,196.997,278.069,189.556,278.069"/> <g> <path style="fill:#424A60;" d="M79.448,30.897v141.241c0,9.71-7.945,17.655-17.655,17.655s-17.655-7.945-17.655-17.655V30.897 c0-9.71,7.945-17.655,17.655-17.655S79.448,21.186,79.448,30.897"/> <path style="fill:#424A60;" d="M467.862,30.897v141.241c0,9.71-7.945,17.655-17.655,17.655c-9.71,0-17.655-7.945-17.655-17.655 V30.897c0-9.71,7.945-17.655,17.655-17.655C459.917,13.241,467.862,21.186,467.862,30.897"/> </g> <g> <path style="fill:#7383BF;" d="M467.862,112.299c4.696,4.228,10.84,6.877,17.655,6.877c14.627,0,26.483-11.864,26.483-26.483 c0-14.627-11.855-26.483-26.483-26.483c-6.815,0-12.959,2.639-17.655,6.868V112.299z"/> <path style="fill:#7383BF;" d="M44.138,81.908c-4.696-4.228-10.84-6.877-17.655-6.877C11.855,75.031,0,86.895,0,101.514 c0,14.627,11.855,26.483,26.483,26.483c6.815,0,12.959-2.639,17.655-6.868V81.908z"/> </g> <g> <path style="fill:#CEC9AE;" d="M238.345,92.69h-79.448c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h79.448 c4.873,0,8.828,3.946,8.828,8.828C247.172,88.744,243.218,92.69,238.345,92.69"/> <path style="fill:#CEC9AE;" d="M123.586,92.69c-1.148,0-2.295-0.185-3.354-0.706c-1.059-0.441-2.03-1.059-2.913-1.854 c-0.794-0.892-1.412-1.854-1.854-2.913c-0.53-1.059-0.706-2.207-0.706-3.354c0-0.538,0.088-1.148,0.177-1.677 c0.088-0.618,0.265-1.148,0.53-1.677c0.177-0.53,0.441-1.059,0.794-1.598c0.265-0.433,0.706-0.874,1.059-1.315 c0.883-0.794,1.766-1.412,2.913-1.854c3.266-1.412,7.15-0.618,9.622,1.854c1.589,1.668,2.56,3.972,2.56,6.268 c0,2.383-0.883,4.59-2.56,6.268c-0.883,0.794-1.854,1.412-2.913,1.854C125.881,92.504,124.734,92.69,123.586,92.69"/> <path style="fill:#CEC9AE;" d="M238.345,136.828H123.586c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828 h114.759c4.873,0,8.828,3.946,8.828,8.828C247.172,132.882,243.218,136.828,238.345,136.828"/> <path style="fill:#CEC9AE;" d="M388.414,92.69h-79.448c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828h79.448 c4.873,0,8.828,3.946,8.828,8.828C397.241,88.744,393.287,92.69,388.414,92.69"/> <path style="fill:#CEC9AE;" d="M273.655,92.69c-2.383,0-4.59-0.892-6.268-2.56c-1.677-1.677-2.56-3.884-2.56-6.268 c0-2.392,0.971-4.599,2.56-6.268c0.883-0.794,1.766-1.412,2.913-1.854c2.119-0.892,4.59-0.971,6.709,0 c1.148,0.441,2.03,1.059,2.913,1.854c0.353,0.441,0.794,0.883,1.059,1.315c0.353,0.538,0.618,1.068,0.794,1.598 c0.265,0.53,0.441,1.059,0.53,1.677c0.088,0.53,0.177,1.139,0.177,1.677c0,1.148-0.177,2.295-0.706,3.354 c-0.441,1.059-1.059,2.022-1.854,2.913C278.246,91.798,276.039,92.69,273.655,92.69"/> <path style="fill:#CEC9AE;" d="M388.414,136.828H273.655c-4.873,0-8.828-3.946-8.828-8.828c0-4.882,3.955-8.828,8.828-8.828 h114.759c4.873,0,8.828,3.946,8.828,8.828C397.241,132.882,393.287,136.828,388.414,136.828"/> </g> </g> </svg></button>
+      <button class="icon-btn" id="langToggle" title="Langue du contenu (FR/EN)"><svg class="icon-svg" width="18" height="18" viewBox="0 0 32 32"><title>folder_type_locale_opened</title><path d="M27.4,5.5H18.2L16.1,9.7H4.3V26.5H29.5V5.5Zm0,18.7H6.6V11.8H27.4Zm0-14.5H19.2l1-2.1h7.1V9.7Z" style="fill:#7b87db"/><polygon points="25.7 13.7 0.5 13.7 4.3 26.5 29.5 26.5 25.7 13.7" style="fill:#7b87db"/><path d="M29.6,31A1.39,1.39,0,0,0,31,29.624V15.591a1.39,1.39,0,0,0-1.4-1.376H15.968L21.439,31Z" style="fill:#d9d9d9"/><polygon points="25.03 27.035 21.464 31 20.167 27.035 25.03 27.035" style="fill:#4352b8"/><path d="M29.673,20.03v-.82H25.718V17.884H24.435v1.325H21.91v.82h5.023a7.272,7.272,0,0,1-1.441,2.535c-1.027-1.214-1.031-1.609-1.031-1.609H23.4s.044.591,1.483,2.278a10.13,10.13,0,0,1-.822.761l.328,1.024s.494-.425,1.115-1.083c.621.673,1.422,1.483,2.459,2.449l.673-.673c-1.111-1.008-1.925-1.807-2.522-2.449A7.445,7.445,0,0,0,27.9,20.028h1.775Z" style="fill:#617d8b"/><path d="M11.4,10A1.4,1.4,0,0,0,10,11.4V25.64a1.4,1.4,0,0,0,1.4,1.4H25.032L19.561,10Z" style="fill:#4f8bf5"/><path d="M21.242,14.216H29.6A1.39,1.39,0,0,1,31,15.591V24.01Z" style="fill:#ffffff;opacity:0.200000002980232;isolation:isolate"/><path d="M13.792,18.856c.458-1.18.908-2.362,1.365-3.542h1.327c.072.182.141.365.212.548.335.865.665,1.732,1,2.6s.659,1.714.989,2.572l.267.692c-.314,0-.629,0-.943,0h-.222q-.249-.758-.494-1.518H14.349q-.245.76-.493,1.518c-.388,0-.777,0-1.165,0q.55-1.433,1.1-2.866m.886.5c.763,0,1.525,0,2.288,0-.382-1-.76-2.008-1.144-3.011C15.437,17.352,15.06,18.358,14.678,19.361Z" style="fill:#f2f2f2"/></svg><span id="langToggleText">FR</span></button>
+      <button class="icon-btn" id="fontToggle" title="Changer la police">Aa</button>
+      <button class="icon-btn" id="themeToggle" title="Changer le thème"><svg class="icon-svg" width="20" height="20" viewBox="0 0 64 64" xml:space="preserve"> <style type="text/css"> .st0{fill:#4F5D73;} .st1{opacity:0.2;} .st2{fill:#231F20;} .st3{fill:#E0E0D1;} </style> <circle cx="32" cy="32" r="32"/> <g class="st1"> <path class="st2" d="M54.5,32.5h-2.6c-0.1-1.6-0.4-3.2-0.9-4.6l2.4-1c0.8-0.3,1.1-1.2,0.8-2c-0.3-0.8-1.2-1.1-2-0.8l-2.4,1 c-0.7-1.5-1.7-2.9-2.7-4.1l1.8-1.8c0.6-0.6,0.6-1.5,0-2.1c-0.6-0.6-1.5-0.6-2.1,0L45,18.8c-1.2-1-2.5-1.9-3.9-2.6l1-2.4 c0.3-0.8,0-1.6-0.8-2c-0.8-0.3-1.6,0-2,0.8l-1,2.4c-1.5-0.5-3.2-0.8-4.9-1v-2.6c0-0.8-0.7-1.5-1.5-1.5c-0.8,0-1.5,0.7-1.5,1.5v2.6 c-1.6,0.1-3.2,0.4-4.6,0.9l-1-2.4c-0.3-0.8-1.2-1.1-2-0.8c-0.8,0.3-1.1,1.2-0.8,2l1,2.4c-1.5,0.7-2.9,1.7-4.1,2.7L17.2,17 c-0.6-0.6-1.5-0.6-2.1,0c-0.6,0.6-0.6,1.5,0,2.1l1.8,1.8c-1,1.2-1.9,2.5-2.6,3.9l-2.4-1c-0.8-0.3-1.6,0-2,0.8c-0.3,0.8,0,1.6,0.8,2 l2.4,1c-0.5,1.5-0.8,3.2-1,4.9H9.5C8.7,32.5,8,33.2,8,34s0.7,1.5,1.5,1.5h2.6c0.1,1.6,0.4,3.2,0.9,4.6l-2.4,1 c-0.8,0.3-1.1,1.2-0.8,2c0.2,0.6,0.8,0.9,1.4,0.9c0.2,0,0.4,0,0.6-0.1l2.4-1c0.7,1.5,1.7,2.9,2.7,4.1L15,48.8 c-0.6,0.6-0.6,1.5,0,2.1c0.3,0.3,0.7,0.4,1.1,0.4c0.4,0,0.8-0.1,1.1-0.4l1.8-1.8c1.2,1,2.5,1.9,3.9,2.6l-1,2.4 c-0.3,0.8,0,1.6,0.8,2c0.2,0.1,0.4,0.1,0.6,0.1c0.6,0,1.1-0.3,1.4-0.9l1-2.4c1.5,0.5,3.2,0.8,4.9,1v2.6c0,0.8,0.7,1.5,1.5,1.5 c0.8,0,1.5-0.7,1.5-1.5v-2.6c1.6-0.1,3.2-0.4,4.6-0.9l1,2.4c0.2,0.6,0.8,0.9,1.4,0.9c0.2,0,0.4,0,0.6-0.1c0.8-0.3,1.1-1.2,0.8-2 l-1-2.4c1.5-0.7,2.9-1.7,4.1-2.7l1.8,1.8c0.3,0.3,0.7,0.4,1.1,0.4s0.8-0.1,1.1-0.4c0.6-0.6,0.6-1.5,0-2.1L47.2,47 c1-1.2,1.9-2.5,2.6-3.9l2.4,1c0.2,0.1,0.4,0.1,0.6,0.1c0.6,0,1.1-0.3,1.4-0.9c0.3-0.8,0-1.6-0.8-2l-2.4-1c0.5-1.5,0.8-3.2,1-4.9 h2.6c0.8,0,1.5-0.7,1.5-1.5S55.3,32.5,54.5,32.5z M49,34c0,9.4-7.6,17-17,17c-9.4,0-17-7.6-17-17s7.6-17,17-17 C41.4,17,49,24.6,49,34z"/> <path class="st2" d="M32,20c-7.7,0-14,6.3-14,14s6.3,14,14,14s14-6.3,14-14S39.7,20,32,20z M21,34c0-6.1,4.9-11,11-11v22 C25.9,45,21,40.1,21,34z"/> </g> <g> <path class="st3" d="M54.5,30.5h-2.6c-0.1-1.6-0.4-3.2-0.9-4.6l2.4-1c0.8-0.3,1.1-1.2,0.8-2c-0.3-0.8-1.2-1.1-2-0.8l-2.4,1 c-0.7-1.5-1.7-2.9-2.7-4.1l1.8-1.8c0.6-0.6,0.6-1.5,0-2.1c-0.6-0.6-1.5-0.6-2.1,0L45,16.8c-1.2-1-2.5-1.9-3.9-2.6l1-2.4 c0.3-0.8,0-1.6-0.8-2c-0.8-0.3-1.6,0-2,0.8l-1,2.4c-1.5-0.5-3.2-0.8-4.9-1V9.5C33.5,8.7,32.8,8,32,8c-0.8,0-1.5,0.7-1.5,1.5v2.6 c-1.6,0.1-3.2,0.4-4.6,0.9l-1-2.4c-0.3-0.8-1.2-1.1-2-0.8c-0.8,0.3-1.1,1.2-0.8,2l1,2.4c-1.5,0.7-2.9,1.7-4.1,2.7L17.2,15 c-0.6-0.6-1.5-0.6-2.1,0c-0.6,0.6-0.6,1.5,0,2.1l1.8,1.8c-1,1.2-1.9,2.5-2.6,3.9l-2.4-1c-0.8-0.3-1.6,0-2,0.8c-0.3,0.8,0,1.6,0.8,2 l2.4,1c-0.5,1.5-0.8,3.2-1,4.9H9.5C8.7,30.5,8,31.2,8,32c0,0.8,0.7,1.5,1.5,1.5h2.6c0.1,1.6,0.4,3.2,0.9,4.6l-2.4,1 c-0.8,0.3-1.1,1.2-0.8,2c0.2,0.6,0.8,0.9,1.4,0.9c0.2,0,0.4,0,0.6-0.1l2.4-1c0.7,1.5,1.7,2.9,2.7,4.1L15,46.8 c-0.6,0.6-0.6,1.5,0,2.1c0.3,0.3,0.7,0.4,1.1,0.4c0.4,0,0.8-0.1,1.1-0.4l1.8-1.8c1.2,1,2.5,1.9,3.9,2.6l-1,2.4 c-0.3,0.8,0,1.6,0.8,2c0.2,0.1,0.4,0.1,0.6,0.1c0.6,0,1.1-0.3,1.4-0.9l1-2.4c1.5,0.5,3.2,0.8,4.9,1v2.6c0,0.8,0.7,1.5,1.5,1.5 c0.8,0,1.5-0.7,1.5-1.5v-2.6c1.6-0.1,3.2-0.4,4.6-0.9l1,2.4c0.2,0.6,0.8,0.9,1.4,0.9c0.2,0,0.4,0,0.6-0.1c0.8-0.3,1.1-1.2,0.8-2 l-1-2.4c1.5-0.7,2.9-1.7,4.1-2.7l1.8,1.8c0.3,0.3,0.7,0.4,1.1,0.4s0.8-0.1,1.1-0.4c0.6-0.6,0.6-1.5,0-2.1L47.2,45 c1-1.2,1.9-2.5,2.6-3.9l2.4,1c0.2,0.1,0.4,0.1,0.6,0.1c0.6,0,1.1-0.3,1.4-0.9c0.3-0.8,0-1.6-0.8-2l-2.4-1c0.5-1.5,0.8-3.2,1-4.9 h2.6c0.8,0,1.5-0.7,1.5-1.5C56,31.2,55.3,30.5,54.5,30.5z M49,32c0,9.4-7.6,17-17,17c-9.4,0-17-7.6-17-17s7.6-17,17-17 C41.4,15,49,22.6,49,32z"/> <path class="st3" d="M32,18c-7.7,0-14,6.3-14,14s6.3,14,14,14s14-6.3,14-14S39.7,18,32,18z M21,32c0-6.1,4.9-11,11-11v22 C25.9,43,21,38.1,21,32z"/> </g> </svg></button>
+      <button class="icon-btn" id="openSettings" title="Paramètres"><svg class="icon-svg" width="20" height="20" viewBox="0 0 512 512" xml:space="preserve"> <circle style="fill:#BDFBFD;" cx="256" cy="256" r="256"/> <path style="fill:#00E4ED;" d="M275.092,511.291c126.162-9.302,226.897-110.037,236.199-236.199L379.197,142.998l-3.751,32.99 l-83.18-83.18l-116.14,101.707L96.539,205.81l110.645,110.645l-74.38,52.546L275.092,511.291z"/> <path style="fill:#324A5E;" d="M382.928,256c0-10.128-1.221-19.966-3.462-29.408l35.995-20.782l-36.264-62.812l-36.021,20.795 c-14.252-13.478-31.613-23.69-50.912-29.434V92.808h-72.53v41.551c-19.297,5.744-36.659,15.956-50.91,29.434l-36.019-20.795 L96.539,205.81l35.995,20.782c-2.241,9.442-3.462,19.28-3.462,29.408c0,10.128,1.221,19.966,3.462,29.408L96.539,306.19 l36.266,62.814l36.019-20.795c14.252,13.479,31.613,23.69,50.91,29.434v41.551h72.53v-41.551 c19.297-5.744,36.659-15.956,50.912-29.434l36.021,20.795l36.264-62.814l-35.997-20.782 C381.707,275.966,382.928,266.128,382.928,256z M256,310.398c-30.043,0-54.398-24.355-54.398-54.398s24.355-54.398,54.398-54.398 s54.398,24.355,54.398,54.398S286.043,310.398,256,310.398z"/> <path style="fill:#2B3B4E;" d="M382.928,256c0-10.128-1.221-19.966-3.462-29.408l35.995-20.782l-36.264-62.812l-36.021,20.795 c-14.252-13.478-31.613-23.69-50.91-29.434V92.806h-36.84v108.809c0.191-0.002,0.381-0.014,0.574-0.014 c30.043,0,54.398,24.354,54.398,54.398S286.042,310.398,256,310.398c-0.193,0-0.383-0.012-0.574-0.014v108.809h36.84v-41.551c19.297-5.744,36.659-15.955,50.91-29.434l36.021,20.795l36.264-62.814l-35.995-20.782C381.707,275.966,382.928,266.128,382.928,256 z"/> <path style="fill:#FFD15D;" d="M256,181.682c-41.044,0-74.318,33.273-74.318,74.318c0,41.044,33.273,74.318,74.318,74.318 c41.044,0,74.318-33.273,74.318-74.318S297.044,181.682,256,181.682z M256,320.54c-35.643,0-64.54-28.894-64.54-64.54 s28.896-64.54,64.54-64.54s64.54,28.894,64.54,64.54S291.643,320.54,256,320.54z"/> <path style="fill:#F4A200;" d="M256,181.682c-0.193,0-0.381,0.014-0.574,0.014v9.778c0.191-0.002,0.381-0.014,0.574-0.014 c35.643,0,64.54,28.894,64.54,64.54s-28.894,64.54-64.54,64.54c-0.193,0-0.383-0.012-0.574-0.014v9.778 c0.193,0,0.381,0.014,0.574,0.014c41.044,0,74.318-33.273,74.318-74.318S297.044,181.682,256,181.682z"/> </svg></button>
+    </div>
+  </header>
+
+  <!-- Search Area -->
+  <section class="section">
+    <div class="slug"><span>Moteur de recherche</span></div>
+    <div class="search-bar-wrap">
+      <input type="text" id="searchBar" class="search-input" placeholder="Entrez un terme lié à l'IA (ex: transformer, LLM, GPU)...">
+      <button class="icon-btn" id="searchBtn" style="width:46px; height: 46px; border-radius: 10px;"><svg class="icon-svg" width="22" height="22" viewBox="0 0 1024 1024"><path d="M492.5 917.7c-247 0-447.9-200.9-447.9-447.9s200.9-448 447.9-448 447.9 200.9 447.9 447.9-200.9 448-447.9 448z m0-810.6c-200 0-362.6 162.7-362.6 362.6s162.7 362.6 362.6 362.6 362.6-162.7 362.6-362.6-162.6-362.6-362.6-362.6z" fill="#3688FF" /><path d="M951.1 971c-10.9 0-21.8-4.2-30.2-12.5l-96-96c-16.7-16.7-16.7-43.7 0-60.3 16.6-16.7 43.7-16.7 60.3 0l96 96c16.7 16.7 16.7 43.7 0 60.3-8.2 8.4-19.2 12.5-30.1 12.5z" fill="#5F6379" /></svg></button>
+    </div>
+    <div class="api-hint">Ce dictionnaire est strictement réservé aux définitions et informations liées à l'intelligence artificielle.</div>
+    
+    <div class="pills-row" id="recentSearches"></div>
+
+    <div class="slider-wrap">
+      <div class="slider-wrap-top">
+        <label>Précision / Détails</label>
+        <input type="range" id="precisionSlider" min="1" max="3" value="2" title="Déplacez pour plus de détails">
+      </div>
+      <div class="slider-points" id="precisionPoints">
+        <button type="button" class="slider-point" data-level="1">Concis</button>
+        <button type="button" class="slider-point" data-level="2">Modéré</button>
+        <button type="button" class="slider-point" data-level="3">Détaillé</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Area -->
+  <section class="section">
+    <div class="slug"><span>Définition & Contexte</span></div>
+    <div class="dict-box" id="resultBox">
+      En attente... La définition IA apparaîtra ici, selon le niveau de précision choisi.
+    </div>
+    
+    <div class="lang-row">
+      <label class="lang-check">
+        <input type="checkbox" id="translateCheck"><svg class="icon-svg" width="14" height="14" viewBox="0 0 32 32"><title>folder_type_locale_opened</title><path d="M27.4,5.5H18.2L16.1,9.7H4.3V26.5H29.5V5.5Zm0,18.7H6.6V11.8H27.4Zm0-14.5H19.2l1-2.1h7.1V9.7Z" style="fill:#7b87db"/><polygon points="25.7 13.7 0.5 13.7 4.3 26.5 29.5 26.5 25.7 13.7" style="fill:#7b87db"/><path d="M29.6,31A1.39,1.39,0,0,0,31,29.624V15.591a1.39,1.39,0,0,0-1.4-1.376H15.968L21.439,31Z" style="fill:#d9d9d9"/><polygon points="25.03 27.035 21.464 31 20.167 27.035 25.03 27.035" style="fill:#4352b8"/><path d="M29.673,20.03v-.82H25.718V17.884H24.435v1.325H21.91v.82h5.023a7.272,7.272,0,0,1-1.441,2.535c-1.027-1.214-1.031-1.609-1.031-1.609H23.4s.044.591,1.483,2.278a10.13,10.13,0,0,1-.822.761l.328,1.024s.494-.425,1.115-1.083c.621.673,1.422,1.483,2.459,2.449l.673-.673c-1.111-1.008-1.925-1.807-2.522-2.449A7.445,7.445,0,0,0,27.9,20.028h1.775Z" style="fill:#617d8b"/><path d="M11.4,10A1.4,1.4,0,0,0,10,11.4V25.64a1.4,1.4,0,0,0,1.4,1.4H25.032L19.561,10Z" style="fill:#4f8bf5"/><path d="M21.242,14.216H29.6A1.39,1.39,0,0,1,31,15.591V24.01Z" style="fill:#ffffff;opacity:0.200000002980232;isolation:isolate"/><path d="M13.792,18.856c.458-1.18.908-2.362,1.365-3.542h1.327c.072.182.141.365.212.548.335.865.665,1.732,1,2.6s.659,1.714.989,2.572l.267.692c-.314,0-.629,0-.943,0h-.222q-.249-.758-.494-1.518H14.349q-.245.76-.493,1.518c-.388,0-.777,0-1.165,0q.55-1.433,1.1-2.866m.886.5c.763,0,1.525,0,2.288,0-.382-1-.76-2.008-1.144-3.011C15.437,17.352,15.06,18.358,14.678,19.361Z" style="fill:#f2f2f2"/></svg> Traduire
+      </label>
+      <select class="lang-select" id="langSelect" style="display:none;"></select>
+      <span class="lang-status" id="langStatus"></span>
+    </div>
+
+    <div class="action-row">
+      <button class="action-btn" id="readAloudBtn"><svg class="icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg> Lire à voix haute</button>
+      <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1" style="width: 80px;" title="Vitesse de lecture">
+      <span style="flex:1;"></span>
+      <button class="action-btn" id="exportPdfBtn"><svg class="icon-svg" width="16" height="16" viewBox="0 0 56 64"><g><path fill="#8C181A" d="M5.1,0C2.3,0,0,2.3,0,5.1v53.8C0,61.7,2.3,64,5.1,64h45.8c2.8,0,5.1-2.3,5.1-5.1V20.3L37.1,0H5.1z"/><path fill="#6B0D12" d="M56,20.4v1H43.2c0,0-6.3-1.3-6.1-6.7c0,0,0.2,5.7,6,5.7H56z"/><path opacity="0.5" fill="#FFFFFF" d="M37.1,0v14.6c0,1.7,1.1,5.8,6.1,5.8H56L37.1,0z"/></g><path fill="#FFFFFF" d="M14.9,49h-3.3v4.1c0,0.4-0.3,0.7-0.8,0.7c-0.4,0-0.7-0.3-0.7-0.7V42.9c0-0.6,0.5-1.1,1.1-1.1h3.7 c2.4,0,3.8,1.7,3.8,3.6C18.7,47.4,17.3,49,14.9,49z M14.8,43.1h-3.2v4.6h3.2c1.4,0,2.4-0.9,2.4-2.3C17.2,44,16.2,43.1,14.8,43.1z M25.2,53.8h-3c-0.6,0-1.1-0.5-1.1-1.1v-9.8c0-0.6,0.5-1.1,1.1-1.1h3c3.7,0,6.2,2.6,6.2,6C31.4,51.2,29,53.8,25.2,53.8z M25.2,43.1 h-2.6v9.3h2.6c2.9,0,4.6-2.1,4.6-4.7C29.9,45.2,28.2,43.1,25.2,43.1z M41.5,43.1h-5.8V47h5.7c0.4,0,0.6,0.3,0.6,0.7 s-0.3,0.6-0.6,0.6h-5.7v4.8c0,0.4-0.3,0.7-0.8,0.7c-0.4,0-0.7-0.3-0.7-0.7V42.9c0-0.6,0.5-1.1,1.1-1.1h6.2c0.4,0,0.6,0.3,0.6,0.7 C42.2,42.8,41.9,43.1,41.5,43.1z"/></svg> PDF</button>
+      <button class="action-btn" id="exportWordBtn"><svg class="icon-svg" width="16" height="16" viewBox="-4 0 64 64"><g fill-rule="evenodd"><path d="m5.11 0a5.07 5.07 0 0 0 -5.11 5v53.88a5.07 5.07 0 0 0 5.11 5.12h45.78a5.07 5.07 0 0 0 5.11-5.12v-38.6l-18.94-20.28z" fill="#107cad"/><path d="m56 20.35v1h-12.82s-6.31-1.26-6.13-6.71c0 0 .21 5.71 6 5.71z" fill="#084968"/><path d="m37.07 0v14.56a5.78 5.78 0 0 0 6.11 5.79h12.82z" fill="#90d0fe" opacity=".5"/></g><path d="m14.24 53.86h-3a1.08 1.08 0 0 1 -1.08-1.08v-9.85a1.08 1.08 0 0 1 1.08-1.08h3a6 6 0 1 1 0 12zm0-10.67h-2.61v9.34h2.61a4.41 4.41 0 0 0 4.61-4.66 4.38 4.38 0 0 0 -4.61-4.68zm14.42 10.89a5.86 5.86 0 0 1 -6-6.21 6 6 0 1 1 11.92 0 5.87 5.87 0 0 1 -5.92 6.21zm0-11.09c-2.7 0-4.41 2.07-4.41 4.88s1.71 4.88 4.41 4.88 4.41-2.09 4.41-4.88-1.72-4.87-4.41-4.87zm18.45.38a.75.75 0 0 1 .2.52.71.71 0 0 1 -.7.72.64.64 0 0 1 -.51-.24 4.06 4.06 0 0 0 -3-1.38 4.61 4.61 0 0 0 -4.63 4.88 4.63 4.63 0 0 0 4.63 4.88 4 4 0 0 0 3-1.37.7.7 0 0 1 .51-.24.72.72 0 0 1 .7.74.78.78 0 0 1 -.2.51 5.33 5.33 0 0 1 -4 1.69 6.22 6.22 0 0 1 0-12.43 5.26 5.26 0 0 1 4 1.72z" fill="#ffffff"/></svg> Word</button>
+    </div>
+
+    <div class="volume-row">
+      <button class="vol-btn" id="volDownBtn" title="Diminuer le volume" aria-label="Diminuer le volume">−</button>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" title="Volume de lecture">
+      <button class="vol-btn" id="volUpBtn" title="Augmenter le volume" aria-label="Augmenter le volume">+</button>
+    </div>
+  </section>
+</div>
+
+<footer class="footer">
+  <div class="marquee-track" id="ai-marquee">
+    <span class="marquee-item">DICTIONNAIRE AI BY OSIRIS INC —</span>
+    <span class="marquee-item">Chargement des actualités IA... —</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  window.jspdf || document.write('<script src="js/jspdf.umd.min.js"><\\/script>');</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
+<script>
+  window.saveAs || document.write('<script src="js/FileSaver.js"><\\/script>');</script>
+
+<script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+<script>
+  window.docx || document.write('<script src="js/index.js"><\\/script>');</script>
+<script>
+(function(){
+  "use strict";
+
+  const LANGUAGES = ['Français', 'Anglais', 'Espagnol', 'Allemand', 'Italien', 'Portugais', 'Japonais', 'Chinois (Simplifié)', 'Coréen', 'Arabe', 'Hindi', 'Russe', 'Néerlandais'];
+
+  // Maps the display names above to ISO 639-1 codes used by the (keyless)
+  // MyMemory translation API.
+  const LANG_CODES = {
+    'Français': 'fr', 'Anglais': 'en', 'Espagnol': 'es', 'Allemand': 'de',
+    'Italien': 'it', 'Portugais': 'pt', 'Japonais': 'ja', 'Chinois (Simplifié)': 'zh-CN',
+    'Coréen': 'ko', 'Arabe': 'ar', 'Hindi': 'hi', 'Russe': 'ru', 'Néerlandais': 'nl'
+  };
+
+  // Maps the same display names to BCP-47 tags for the Web Speech API,
+  // so "Lire à voix haute" can automatically switch reading language/voice
+  // to match whatever is actually shown in the definition box.
+  const LANG_SPEECH_TAGS = {
+    'Français': 'fr-FR', 'Anglais': 'en-US', 'Espagnol': 'es-ES', 'Allemand': 'de-DE',
+    'Italien': 'it-IT', 'Portugais': 'pt-PT', 'Japonais': 'ja-JP', 'Chinois (Simplifié)': 'zh-CN',
+    'Coréen': 'ko-KR', 'Arabe': 'ar-SA', 'Hindi': 'hi-IN', 'Russe': 'ru-RU', 'Néerlandais': 'nl-NL'
+  };
+
+  const FREE_MODELS = {
+    openrouter: [
+      { id: 'meta-llama/llama-3.1-8b-instruct:free', label: 'Llama 3.1 8B (:free)' },
+      { id: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (:free)' },
+      { id: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat v3 (:free)' }
+    ],
+    groq: [
+      { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B Versatile' },
+      { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B Instant' }
+    ],
+    google: [
+      { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }
+    ],
+    github: [
+      { id: 'openai/gpt-4.1', label: 'GPT-4.1' },
+      { id: 'meta/Llama-3.3-70B-Instruct', label: 'Llama 3.3 70B Instruct' },
+      { id: 'microsoft/Phi-3.5-mini-instruct', label: 'Phi-3.5 Mini Instruct' }
+    ]
+  };
+
+  const FREE_KEY_LINKS = {
+    openrouter: 'https://openrouter.ai/keys',
+    groq: 'https://console.groq.com/keys',
+    google: 'https://aistudio.google.com/apikey'
+  };
+
+  const LOCAL_DICT = {
+    "intelligence artificielle": "Technologie de simulation de l'intelligence humaine à l'aide d'algorithmes et de systèmes informatiques.",
+    "ai": "Artificial Intelligence ou Intelligence Artificielle. Révolution technologique majeure du XXIe siècle.",
+    "ia": "Intelligence Artificielle. Ensemble de techniques permettant à une machine d'imiter des capacités cognitives humaines.",
+    "osiris": "Osiris Inc. Entreprise innovante spécialisée dans le développement de solutions technologiques autonomes et de portefeuilles éducatifs.",
+    "machine learning": "Apprentissage automatique. Sous-domaine de l'IA où les systèmes apprennent à partir de données sans être explicitement programmés.",
+    "deep learning": "Apprentissage profond. Sous-domaine du machine learning basé sur des réseaux de neurones à plusieurs couches.",
+    "réseau de neurones": "Modèle computationnel inspiré du cerveau humain, composé de couches de neurones artificiels interconnectés.",
+    "llm": "Large Language Model (grand modèle de langage). Modèle d'IA entraîné sur d'immenses corpus de texte pour comprendre et générer du langage naturel.",
+    "gpt": "Generative Pre-trained Transformer. Famille de grands modèles de langage développés par OpenAI, basés sur l'architecture Transformer.",
+    "transformer": "Architecture de réseau de neurones basée sur le mécanisme d'attention, à la base des grands modèles de langage modernes."
+  };
+
+  const OUT_OF_SCOPE_MSG = "Ce dictionnaire est strictement réservé aux définitions et informations liées à l'intelligence artificielle (IA). Le terme recherché ne semble pas appartenir à ce domaine. Essayez par exemple : « machine learning », « réseau de neurones » ou « transformer ».";
+
+  // Bilingual keyword set used to heuristically confirm a search term
+  // belongs to the AI / ML / data-science domain when offline.
+  const AI_KEYWORDS = [
+    'intelligence artificielle', 'artificial intelligence', ' ia', 'ia ', 'ai ', ' ai',
+    'machine learning', 'apprentissage automatique', 'apprentissage machine',
+    'deep learning', 'apprentissage profond', 'réseau de neurone', 'neural network',
+    'algorithme', 'algorithm', 'modèle', 'model', 'données', 'data', 'dataset', 'jeu de données',
+    'gpt', 'llm', 'transformer', 'chatbot', 'chat-bot', 'robot', 'robotique', 'robotics',
+    'nlp', 'traitement du langage', 'natural language', 'computer vision', 'vision par ordinateur',
+    'génératif', 'generative', 'prompt', 'token', 'gradient', 'entraînement', 'training',
+    'inférence', 'inference', 'supervisé', 'supervised', 'non supervisé', 'unsupervised',
+    'renforcement', 'reinforcement', 'surapprentissage', 'overfitting', 'rétropropagation',
+    'backpropagation', 'perceptron', 'cnn', 'rnn', 'lstm', 'gan', 'embedding', 'vecteur', 'vector',
+    'classification', 'régression', 'regression', 'clustering', 'biais', 'bias', 'hallucination',
+    'fine-tuning', 'finetuning', 'alignement', 'alignment', 'agent', 'agentique', 'agentic',
+    'singularité', 'singularity', 'turing', 'anthropic', 'claude', 'openai', 'gemini', 'llama',
+    'mistral', 'deepseek', 'sam altman', 'perplexité', 'perplexity', 'rag', 'multimodal',
+    'diffusion', 'stable diffusion', 'gpu', 'tpu', 'grand modèle de langage', 'apprentissage', 'learning'
+  ];
+
+  function isAIRelated(word) {
+    const w = ' ' + word.toLowerCase().trim() + ' ';
+    if (!w.trim()) return false;
+    if (LOCAL_DICT.hasOwnProperty(w.trim())) return true;
+    return AI_KEYWORDS.some(k => w.includes(k));
+  }
+
+  let state = JSON.parse(localStorage.getItem('aiDictState')) || {
+    theme: 'dark', font: 'mono', lang: 'FR', history: [], recent: [], cache: {},
+    apiProvider: 'free', apiKeys: { free: '', openrouter: '', groq: '', google: '', github: '' },
+    apiModels: { openrouter: 'meta-llama/llama-3.1-8b-instruct:free', groq: 'llama-3.3-70b-versatile', google: 'gemini-2.5-flash', github: 'openai/gpt-4.1' },
+    apiPanelCollapsed: false, precision: 2, speed: 1, volume: 1, voiceURI: '', translateOn: false, language: 'Anglais'
+  };
+  // Backward-compat: sessions saved before the results cache existed won't
+  // have this key yet, so make sure it's always present as an object.
+  if (!state.cache || typeof state.cache !== 'object') state.cache = {};
+
+  function saveState() { localStorage.setItem('aiDictState', JSON.stringify(state)); }
+
+  // DOM Elements
+  const appBody = document.getElementById('appBody');
+  const themeToggle = document.getElementById('themeToggle');
+  const fontToggle = document.getElementById('fontToggle');
+  const langToggle = document.getElementById('langToggle');
+  const networkStatus = document.getElementById('networkStatus');
+  const searchBar = document.getElementById('searchBar');
+  const searchBtn = document.getElementById('searchBtn');
+  const recentSearches = document.getElementById('recentSearches');
+  const precisionSlider = document.getElementById('precisionSlider');
+  const resultBox = document.getElementById('resultBox');
+  const translateCheck = document.getElementById('translateCheck');
+  const langSelect = document.getElementById('langSelect');
+  const langStatus = document.getElementById('langStatus');
+  const readAloudBtn = document.getElementById('readAloudBtn');
+  const speedSlider = document.getElementById('speedSlider');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const volDownBtn = document.getElementById('volDownBtn');
+  const volUpBtn = document.getElementById('volUpBtn');
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const exportWordBtn = document.getElementById('exportWordBtn');
+  const historyPanel = document.getElementById('historyPanel');
+  const scrim = document.getElementById('scrim');
+  const historyList = document.getElementById('historyList');
+  const openHistoryBtn = document.getElementById('openHistory');
+  const closeHistoryBtn = document.getElementById('closeHistory');
+  const clearHistoryBtn = document.getElementById('clearHistory');
+  const settingsModal = document.getElementById('settingsModal');
+  const openSettingsBtn = document.getElementById('openSettings');
+  const closeSettingsBtn = document.getElementById('closeSettings');
+  const apiParamsToggle = document.getElementById('apiParamsToggle');
+  const apiPanel = document.getElementById('apiPanel');
+  const apiProviderSel = document.getElementById('apiProvider');
+  const apiKeyInp = document.getElementById('apiKey');
+  const apiModelRow = document.getElementById('apiModelRow');
+  const apiModelSel = document.getElementById('apiModel');
+  const apiHint = document.getElementById('apiHint');
+  const apiKeyLinks = document.getElementById('apiKeyLinks');
+  const voiceSelect = document.getElementById('voiceSelect');
+  const voiceFilter = document.getElementById('voiceFilter');
+  let lastDefinitionPlain = '';
+
+  function init() {
+    applyTheme(); applyFont(); applyLang();
+    precisionSlider.value = state.precision;
+    updatePrecisionPoints();
+    speedSlider.value = state.speed;
+    volumeSlider.value = state.volume;
+    apiProviderSel.value = state.apiProvider;
+    apiKeyInp.value = state.apiKeys[state.apiProvider] || '';
+    
+    LANGUAGES.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l; opt.textContent = l;
+      langSelect.appendChild(opt);
+    });
+    langSelect.value = state.language;
+    translateCheck.checked = !!state.translateOn;
+    langSelect.style.display = state.translateOn ? 'inline-block' : 'none';
+
+    refreshApiProviderUI();
+    renderRecent(); renderHistory(); checkNetwork(); populateVoices(); initMarquee();
+  }
+
+  function applyTheme() { appBody.className = state.theme === 'light' ? 'light-theme' : 'dark-theme'; }
+  themeToggle.addEventListener('click', () => { state.theme = state.theme === 'light' ? 'dark' : 'light'; applyTheme(); saveState(); });
+
+  function applyFont() {
+    appBody.classList.remove('font-mono', 'font-serif', 'font-sans');
+    appBody.classList.add(`font-${state.font}`);
+  }
+  fontToggle.addEventListener('click', () => {
+    const fonts = ['mono', 'serif', 'sans'];
+    state.font = fonts[(fonts.indexOf(state.font) + 1) % fonts.length];
+    applyFont(); saveState();
+  });
+
+  function applyLang() { document.getElementById('langToggleText').textContent = state.lang; }
+  langToggle.addEventListener('click', () => { state.lang = state.lang === 'EN' ? 'FR' : 'EN'; applyLang(); saveState(); if(searchBar.value) performSearch(searchBar.value); });
+
+  function checkNetwork() {
+    networkStatus.className = navigator.onLine ? 'status-dot online' : 'status-dot offline';
+  }
+  window.addEventListener('online', checkNetwork); window.addEventListener('offline', checkNetwork);
+
+  function refreshApiProviderUI() {
+    const provider = state.apiProvider;
+    if (provider === 'free') {
+      apiKeyInp.style.display = 'none'; apiModelRow.style.display = 'none';
+      apiHint.textContent = "Mode local actif. Propulsé par Osiris Inc."; apiKeyLinks.innerHTML = '';
+    } else {
+      apiKeyInp.style.display = 'block'; apiModelRow.style.display = 'block';
+      apiHint.textContent = `Entrez votre clé pour ${provider}.`;
+      apiModelSel.innerHTML = '';
+      (FREE_MODELS[provider] || []).forEach(m => {
+        const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.label;
+        apiModelSel.appendChild(opt);
+      });
+      apiModelSel.value = state.apiModels[provider] || '';
+      apiKeyLinks.innerHTML = FREE_KEY_LINKS[provider]
+        ? `<a href="${FREE_KEY_LINKS[provider]}" target="_blank" class="marquee-news-link">Obtenir une clé ${provider} ↗</a>`
+        : '';
+    }
+  }
+
+  /* Robust and Correct Dropdown Observers to Prevent "Stuck Options" */
+  apiProviderSel.addEventListener('change', () => {
+    state.apiProvider = apiProviderSel.value;
+    apiKeyInp.value = state.apiKeys[state.apiProvider] || '';
+    refreshApiProviderUI(); saveState();
+  });
+  apiModelSel.addEventListener('change', () => { state.apiModels[state.apiProvider] = apiModelSel.value; saveState(); });
+  voiceSelect.addEventListener('change', () => { state.voiceURI = voiceSelect.value; saveState(); });
+  apiKeyInp.addEventListener('input', () => { state.apiKeys[state.apiProvider] = apiKeyInp.value; saveState(); });
+
+  // Draggable Handler Logic that preserves dropdown selections safely
+  let isDragging = false, offsetX = 0, offsetY = 0;
+  const settingsHeader = document.getElementById('settingsHeader');
+  settingsHeader.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button') || e.target.closest('select') || e.target.closest('input')) return;
+    isDragging = true;
+    const rect = settingsModal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left; offsetY = e.clientY - rect.top;
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    settingsModal.style.transform = 'none'; settingsModal.style.left = (e.clientX - offsetX) + 'px'; settingsModal.style.top = (e.clientY - offsetY) + 'px';
+  });
+  document.addEventListener('mouseup', () => isDragging = false);
+
+  openSettingsBtn.addEventListener('click', () => settingsModal.classList.add('show'));
+  closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('show'));
+  openHistoryBtn.addEventListener('click', () => { historyPanel.classList.add('open'); scrim.classList.add('show'); });
+  const closeHist = () => { historyPanel.classList.remove('open'); scrim.classList.remove('show'); };
+  closeHistoryBtn.addEventListener('click', closeHist); scrim.addEventListener('click', closeHist);
+
+  apiParamsToggle.addEventListener('click', () => {
+    const coll = apiPanel.classList.toggle('collapsed');
+    apiParamsToggle.classList.toggle('collapsed');
+    apiParamsToggle.setAttribute('aria-expanded', !coll);
+  });
+
+  precisionSlider.addEventListener('input', () => { state.precision = parseInt(precisionSlider.value); updatePrecisionPoints(); saveState(); });
+  document.querySelectorAll('.slider-point').forEach(pt => {
+    pt.addEventListener('click', () => { state.precision = parseInt(pt.getAttribute('data-level')); precisionSlider.value = state.precision; updatePrecisionPoints(); saveState(); });
+  });
+  function updatePrecisionPoints() {
+    document.querySelectorAll('.slider-point').forEach(pt => pt.classList.toggle('active', parseInt(pt.getAttribute('data-level')) === state.precision));
+  }
+
+  translateCheck.addEventListener('change', () => { state.translateOn = translateCheck.checked; langSelect.style.display = state.translateOn ? 'inline-block' : 'none'; saveState(); applyTranslation(); });
+  langSelect.addEventListener('change', () => { state.language = langSelect.value; saveState(); applyTranslation(); });
+
+  function renderRecent() {
+    recentSearches.innerHTML = '';
+    state.recent.forEach(w => {
+      const p = document.createElement('div'); p.className = 'pill'; p.innerHTML = `<span>${w}</span><button class="del-btn">&times;</button>`;
+      p.querySelector('span').onclick = () => { searchBar.value = w; performSearch(w, false); };
+      p.querySelector('.del-btn').onclick = (e) => { e.stopPropagation(); state.recent = state.recent.filter(x => x !== w); saveState(); renderRecent(); };
+      recentSearches.appendChild(p);
+    });
+  }
+
+  function renderHistory() {
+    historyList.innerHTML = state.history.length ? '' : '<div style="color:var(--muted); font-size:12px; text-align:center;">Historique vide.</div>';
+    state.history.forEach(h => {
+      const item = document.createElement('div'); item.className = 'history-item';
+      item.innerHTML = `<span class="word">${h.word}</span><button class="del-hist">&times;</button>`;
+      item.querySelector('.word').onclick = () => { searchBar.value = h.word; performSearch(h.word, false); closeHist(); };
+      item.querySelector('.del-hist').onclick = () => { state.history = state.history.filter(x => x.id !== h.id); saveState(); renderHistory(); };
+      historyList.appendChild(item);
+    });
+  }
+  clearHistoryBtn.addEventListener('click', () => { state.history = []; saveState(); renderHistory(); });
+
+  // Normalizes a search term into a stable cache key (same rule already
+  // used for LOCAL_DICT lookups), so "Transformer", " transformer " and
+  // "transformer" all hit the same cached entry.
+  function cacheKey(word) { return word.toLowerCase().trim(); }
+
+  async function performSearch(word, store = true) {
+    if (!word) return;
+    const key = cacheKey(word);
+
+    // Recalling a word (from the recent pills or the history panel) shows
+    // whatever was cached last time it was searched, instantly and without
+    // any network/API call. This is what makes results survive a reload
+    // and keeps history usable offline.
+    if (!store && state.cache[key]) {
+      lastDefinitionPlain = state.cache[key];
+      applyTranslation();
+      return;
+    }
+
+    resultBox.textContent = "Analyse IA...";
+    if (store) {
+      if(!state.recent.includes(word)) { state.recent.unshift(word); if(state.recent.length > 5) state.recent.pop(); }
+      state.history.unshift({ id: Date.now(), word: word }); saveState(); renderRecent(); renderHistory();
+    }
+
+    // Persists whatever definition was just resolved (offline heuristic,
+    // local dictionary, or live API) into the results cache and writes it
+    // straight to localStorage, so it's there the next time this word is
+    // recalled — even after closing the tab or losing connectivity.
+    function cacheAndStore() {
+      state.cache[key] = lastDefinitionPlain;
+      saveState();
+    }
+
+    // Offline: prefer a previously retained result for this exact term (if
+    // one was ever resolved, live API or local) over regenerating the
+    // generic offline placeholder — so an explicit re-search offline never
+    // "downgrades" an answer that was already fetched for real.
+    if (!navigator.onLine && state.cache[key]) {
+      lastDefinitionPlain = state.cache[key];
+      applyTranslation();
+      return;
+    }
+
+    if (state.apiProvider === 'free' || !navigator.onLine) {
+      const dictKey = word.toLowerCase().trim();
+      if (LOCAL_DICT.hasOwnProperty(dictKey)) {
+        lastDefinitionPlain = LOCAL_DICT[dictKey];
+      } else if (isAIRelated(word)) {
+        lastDefinitionPlain = `Définition autonome hors-ligne de "${word}" [Précision Nv.${state.precision}] gérée par Osiris Inc.`;
+      } else {
+        lastDefinitionPlain = OUT_OF_SCOPE_MSG;
+      }
+      cacheAndStore();
+      applyTranslation();
+      return;
+    }
+
+    const key2 = state.apiKeys[state.apiProvider], model = state.apiModels[state.apiProvider];
+    if (!key2) { resultBox.textContent = "Clé manquante dans les configurations."; return; }
+
+    try {
+      const prompt = `Tu es un dictionnaire strictement spécialisé dans l'intelligence artificielle (IA) et les domaines associés (machine learning, deep learning, data science, robotique, NLP, vision par ordinateur, grands modèles de langage, etc.).
+Si le terme "${word}" appartient à ce domaine, définis-le brièvement et fidèlement, en conformité avec le niveau de précision ${state.precision}/3, sans rien ajouter d'autre.
+Si le terme "${word}" N'APPARTIENT PAS au domaine de l'IA, réponds uniquement, mot pour mot et sans rien ajouter, avec ceci : "${OUT_OF_SCOPE_MSG}"`;
+      let resText = "";
+      if (state.apiProvider === 'google') {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key2}`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const j = await r.json(); resText = j.candidates[0].content.parts[0].text;
+      } else {
+        const url = state.apiProvider === 'groq'
+          ? 'https://api.groq.com/openai/v1/chat/completions'
+          : state.apiProvider === 'github'
+            ? 'https://models.github.ai/inference/chat/completions'
+            : 'https://openrouter.ai/api/v1/chat/completions';
+        const r = await fetch(url, {
+          method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${key2}`},
+          body: JSON.stringify({ model: model, messages: [{ role: 'user', content: prompt }] })
+        });
+        const j = await r.json(); resText = j.choices[0].message.content;
+      }
+      lastDefinitionPlain = resText;
+      cacheAndStore();
+      applyTranslation();
+    } catch {
+      resultBox.textContent = "Erreur de connexion avec le serveur distant.";
+    }
+  }
+
+  searchBtn.addEventListener('click', () => performSearch(searchBar.value));
+  searchBar.addEventListener('keypress', (e) => { if(e.key === 'Enter') performSearch(searchBar.value); });
+
+  // Splits text into chunks that stay under MyMemory's ~500-byte per-request
+  // limit, breaking on sentence boundaries so translations stay coherent.
+  function chunkTextForTranslation(text, maxLen = 450) {
+    const sentences = text.match(/[^.!?]+[.!?]*\s*/g) || [text];
+    const chunks = [];
+    let current = '';
+    for (const s of sentences) {
+      if (current && (current.length + s.length) > maxLen) {
+        chunks.push(current.trim());
+        current = s;
+      } else {
+        current += s;
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+    return chunks.length ? chunks : [text];
+  }
+
+  // Keyless translation via the MyMemory API (no signup / API key required).
+  async function translateText(text, sourceCode, targetCode) {
+    const chunks = chunkTextForTranslation(text);
+    const results = [];
+    for (const chunk of chunks) {
+      const params = new URLSearchParams({ q: chunk, langpair: `${sourceCode}|${targetCode}` });
+      const r = await fetch(`https://api.mymemory.translated.net/get?${params.toString()}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      if (data.responseStatus != 200) throw new Error(data.responseDetails || 'Échec de traduction');
+      results.push(data.responseData.translatedText);
+    }
+    return results.join(' ');
+  }
+
+  async function applyTranslation() {
+    if (!state.translateOn) { resultBox.textContent = lastDefinitionPlain; langStatus.textContent = ''; return; }
+
+    const targetCode = LANG_CODES[state.language] || 'en';
+    if (targetCode === 'fr' || !lastDefinitionPlain) {
+      resultBox.textContent = lastDefinitionPlain;
+      langStatus.textContent = '';
+      return;
+    }
+
+    langStatus.textContent = "Traduction...";
+    try {
+      const translated = await translateText(lastDefinitionPlain, 'fr', targetCode);
+      resultBox.textContent = translated;
+      langStatus.textContent = `Traduit en ${state.language}`;
+    } catch (err) {
+      resultBox.textContent = lastDefinitionPlain;
+      langStatus.textContent = "Échec de la traduction — texte original affiché.";
+    }
+  }
+
+  function populateVoices() {
+    if (typeof speechSynthesis === 'undefined') return;
+    const voices = speechSynthesis.getVoices(); voiceSelect.innerHTML = '';
+    voices.filter(v => !voiceFilter.value || v.name.toLowerCase().includes(voiceFilter.value.toLowerCase())).forEach(v => {
+      const opt = document.createElement('option'); opt.value = v.voiceURI; opt.textContent = `${v.name} (${v.lang})`;
+      if (v.voiceURI === state.voiceURI) opt.selected = true;
+      voiceSelect.appendChild(opt);
+    });
+  }
+  if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = populateVoices;
+  voiceFilter.addEventListener('input', populateVoices);
+
+  // Finds the best available voice for a given BCP-47 language tag:
+  // exact tag match first (e.g. "es-ES"), then any voice sharing the
+  // same primary language subtag (e.g. any "es-*" voice).
+  function pickVoiceForLang(langTag) {
+    const voices = speechSynthesis.getVoices();
+    const primary = langTag.split('-')[0].toLowerCase();
+    return voices.find(v => v.lang.toLowerCase() === langTag.toLowerCase())
+        || voices.find(v => v.lang.toLowerCase().startsWith(primary))
+        || null;
+  }
+
+  // The Web Speech API has no way to change the volume of an utterance
+  // that's already playing. To make the volume slider feel "live", we
+  // track how far into the text playback has gotten (via the 'boundary'
+  // event) and, when the volume changes mid-speech, silently cancel and
+  // re-speak the remaining text at the new volume from that same point.
+  let speechState = null; // { text, offset, lang, voice, rate }
+  let isRestartingSpeech = false;
+  let volumeRestartTimer = null;
+
+  function speakFrom(offset) {
+    if (!speechState) return;
+    const remaining = speechState.text.slice(offset);
+    if (!remaining.trim()) { speechState = null; return; }
+    const u = new SpeechSynthesisUtterance(remaining);
+    u.lang = speechState.lang;
+    if (speechState.voice) u.voice = speechState.voice;
+    u.rate = speechState.rate;
+    u.volume = parseFloat(volumeSlider.value);
+    u.onboundary = (e) => {
+      if (speechState && typeof e.charIndex === 'number') speechState.offset = offset + e.charIndex;
+    };
+    u.onend = () => { if (!isRestartingSpeech) speechState = null; };
+    u.onerror = () => { if (!isRestartingSpeech) speechState = null; };
+    speechSynthesis.speak(u);
+  }
+
+  function restartSpeechAtCurrentVolume() {
+    if (!speechState) return;
+    isRestartingSpeech = true;
+    const resumeOffset = speechState.offset;
+    speechSynthesis.cancel();
+    setTimeout(() => {
+      isRestartingSpeech = false;
+      if (speechState) speakFrom(resumeOffset);
+    }, 30);
+  }
+
+  readAloudBtn.addEventListener('click', () => {
+    if (typeof speechSynthesis === 'undefined' || !resultBox.textContent) return;
+    if (speechSynthesis.speaking) { speechSynthesis.cancel(); speechState = null; return; }
+
+    // Adapt the reading language to whatever is actually displayed: the
+    // translated language when translation is on (and not French), the
+    // app's base French otherwise.
+    const activeLangName = (state.translateOn && LANG_CODES[state.language] && LANG_CODES[state.language] !== 'fr')
+      ? state.language : 'Français';
+    const activeLangTag = LANG_SPEECH_TAGS[activeLangName] || 'fr-FR';
+
+    // Use the manually-selected voice only if it actually matches the active
+    // reading language; otherwise auto-pick a fitting voice so pronunciation
+    // stays correct even if the saved voice was chosen for a different language.
+    const manualVoice = speechSynthesis.getVoices().find(v => v.voiceURI === state.voiceURI);
+    const manualVoiceMatches = manualVoice && manualVoice.lang.toLowerCase().startsWith(activeLangTag.split('-')[0].toLowerCase());
+    const voiceToUse = manualVoiceMatches ? manualVoice : pickVoiceForLang(activeLangTag);
+
+    speechState = {
+      text: resultBox.textContent,
+      offset: 0,
+      lang: activeLangTag,
+      voice: voiceToUse,
+      rate: parseFloat(speedSlider.value)
+    };
+    speakFrom(0);
+  });
+  speedSlider.addEventListener('input', () => { state.speed = parseFloat(speedSlider.value); saveState(); });
+
+  function setVolume(v) {
+    v = Math.min(1, Math.max(0, v));
+    volumeSlider.value = v; state.volume = v; saveState();
+    // Live-adjust: if something is currently being read aloud, debounce a
+    // quick restart from the last known position so the new volume is
+    // heard right away instead of only on the next "Lire à voix haute".
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking && speechState) {
+      clearTimeout(volumeRestartTimer);
+      volumeRestartTimer = setTimeout(restartSpeechAtCurrentVolume, 150);
+    }
+  }
+  volumeSlider.addEventListener('input', () => setVolume(parseFloat(volumeSlider.value)));
+  volDownBtn.addEventListener('click', () => setVolume(parseFloat(volumeSlider.value) - 0.05));
+  volUpBtn.addEventListener('click', () => setVolume(parseFloat(volumeSlider.value) + 0.05));
+
+  function exportFileBaseName() {
+    const word = (searchBar.value || 'definition').trim().toLowerCase().replace(/[^a-z0-9\-]+/gi, '-').replace(/^-+|-+$/g, '') || 'definition';
+    return word;
+  }
+
+  exportPdfBtn.addEventListener('click', () => {
+    if (typeof window.jspdf === 'undefined') { alert("La bibliothèque PDF n'a pas pu être chargée. Vérifiez votre connexion internet."); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const marginX = 48;
+    let y = 56;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(140, 140, 140);
+    doc.text('DICTIONNAIRE AI — BY OSIRIS INC.', marginX, y);
+    y += 22;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(20, 20, 20);
+    doc.text(searchBar.value || 'Définition', marginX, y);
+    y += 10;
+    doc.setDrawColor(220, 220, 220); doc.line(marginX, y, 595 - marginX, y);
+    y += 24;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+    const text = resultBox.textContent.trim() || 'Aucune définition disponible.';
+    const lines = doc.splitTextToSize(text, 595 - marginX * 2);
+    lines.forEach(line => {
+      if (y > 780) { doc.addPage(); y = 56; }
+      doc.text(line, marginX, y);
+      y += 16;
+    });
+
+    doc.save(`${exportFileBaseName()}.pdf`);
+  });
+
+  exportWordBtn.addEventListener('click', async () => {
+    if (typeof window.docx === 'undefined' || typeof window.saveAs === 'undefined') { alert("La bibliothèque Word n'a pas pu être chargée. Vérifiez votre connexion internet."); return; }
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = window.docx;
+    const text = resultBox.textContent.trim() || 'Aucune définition disponible.';
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({ children: [ new TextRun({ text: 'DICTIONNAIRE AI — BY OSIRIS INC.', bold: true, size: 16, color: '8B8A92' }) ] }),
+          new Paragraph({ text: '', spacing: { after: 100 } }),
+          new Paragraph({ heading: HeadingLevel.HEADING_1, children: [ new TextRun({ text: searchBar.value || 'Définition' }) ] }),
+          new Paragraph({ text: '', spacing: { after: 200 } }),
+          ...text.split('\n').map(line => new Paragraph({ children: [ new TextRun({ text: line }) ], spacing: { after: 120 } }))
+        ]
+      }]
+    });
+    const blob = await Packer.toBlob(doc);
+    window.saveAs(blob, `${exportFileBaseName()}.docx`);
+  });
+
+  const AI_NEWS = [
+    { text: 'Claude Fable 5 : passage au paiement à l’usage dès le 8 juillet', url: 'https://www.buildfastwithai.com/blogs/ai-news-today-july-7-2026' },
+    { text: 'ONU : sommet mondial sur la gouvernance de l’IA à Genève', url: 'https://news.un.org/en/story/2026/07/1167862' },
+    { text: 'UE : nouvelles obligations de transparence de l’AI Act (art. 50) dès août', url: 'https://www.tlt.com/insights-and-events/insight/tlts-ai-brief-july-2026' },
+    { text: 'Z.ai lance ZCode, environnement de codage agentique open-weight', url: 'https://www.buildfastwithai.com/blogs/ai-news-today-july-7-2026' },
+    { text: 'Commission IA pour le Bien de l’ONU : première réunion à Genève', url: 'https://www.tech-reader.blog/2026/07/ai-news-tue-july-7-2026.html' }
+  ];
+
+  function initMarquee() {
+    const track = document.getElementById('ai-marquee');
+    const prefix = '<span class="marquee-item">DICTIONNAIRE AI BY OSIRIS INC —</span>';
+    const newsHtml = AI_NEWS.map(n =>
+      `<span class="marquee-item"><a class="marquee-news-link" href="${n.url}" target="_blank" rel="noopener">${n.text}</a> —</span>`
+    ).join('');
+    track.innerHTML = prefix + newsHtml + prefix + newsHtml;
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
